@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import Nav from "@/components/Nav"
 import Hero from "@/components/Hero"
 import Gallery from "@/components/Gallery"
@@ -53,7 +53,7 @@ describe("Gallery", () => {
     render(<Gallery />)
     expect(screen.getByText("The Work")).toBeInTheDocument()
   })
-  it("renders 12 gallery images", () => {
+  it("renders 12 images by default (All tab)", () => {
     render(<Gallery />)
     const images = screen.getAllByRole("img")
     expect(images.length).toBe(12)
@@ -62,6 +62,42 @@ describe("Gallery", () => {
     render(<Gallery />)
     const images = screen.getAllByRole("img") as HTMLImageElement[]
     expect(images[0].src).toContain("picsum.photos")
+  })
+  it("renders category tabs", () => {
+    render(<Gallery />)
+    expect(screen.getByRole("tab", { name: /All/i })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: /Portraits/i })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: /Families/i })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: /Events/i })).toBeInTheDocument()
+  })
+  it("All tab is selected by default", () => {
+    render(<Gallery />)
+    expect(screen.getByRole("tab", { name: /All/i })).toHaveAttribute("aria-selected", "true")
+  })
+  it("filters to portraits when Portraits tab is clicked", () => {
+    render(<Gallery />)
+    fireEvent.click(screen.getByRole("tab", { name: /Portraits/i }))
+    expect(screen.getByRole("tab", { name: /Portraits/i })).toHaveAttribute("aria-selected", "true")
+    // Portraits: 7 images in our data
+    const images = screen.getAllByRole("img")
+    expect(images.length).toBe(7)
+  })
+  it("filters to families when Families tab is clicked", () => {
+    render(<Gallery />)
+    fireEvent.click(screen.getByRole("tab", { name: /Families/i }))
+    const images = screen.getAllByRole("img")
+    expect(images.length).toBe(3)
+  })
+  it("filters to events when Events tab is clicked", () => {
+    render(<Gallery />)
+    fireEvent.click(screen.getByRole("tab", { name: /Events/i }))
+    const images = screen.getAllByRole("img")
+    expect(images.length).toBe(2)
+  })
+  it("renders lightbox trigger buttons with aria-labels", () => {
+    render(<Gallery />)
+    const buttons = screen.getAllByRole("button", { name: /Open .* in lightbox/i })
+    expect(buttons.length).toBe(12)
   })
 })
 
